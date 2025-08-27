@@ -67,13 +67,19 @@
     word-break: break-word;
     touch-action: none;
     user-select: none;
+    position: relative;
   }
   .task-item.completed span {
     text-decoration: line-through;
     color: gray;
   }
-  .task-left { display: flex; align-items: center; gap: 10px; }
-  .delete-btn { cursor: pointer; font-size: 20px; margin-left: 5px; }
+  .task-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  .delete-btn { cursor: pointer; font-size: 20px; margin-left: 5px; flex-shrink: 0; }
   #counter { margin-top: 10px; font-size: 16px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
   @media (max-width: 480px) {
     #task-input, #emoji-input { width: 80px; font-size: 14px; }
@@ -158,11 +164,11 @@ function createTaskElement(task) {
   li.appendChild(taskLeft);
   li.appendChild(deleteBtn);
 
-  // Drag for mobile
+  // Drag only on taskLeft (zone texte + emoji + checkbox)
   let startY = 0;
   let placeholder = null;
 
-  li.addEventListener('touchstart', e => {
+  taskLeft.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
     placeholder = document.createElement('li');
     placeholder.className = 'task-item';
@@ -175,7 +181,7 @@ function createTaskElement(task) {
     li.style.top = li.getBoundingClientRect().top + 'px';
   });
 
-  li.addEventListener('touchmove', e => {
+  taskLeft.addEventListener('touchmove', e => {
     e.preventDefault();
     const touchY = e.touches[0].clientY;
     li.style.top = li.offsetTop + (touchY - startY) + 'px';
@@ -190,7 +196,7 @@ function createTaskElement(task) {
     }
   });
 
-  li.addEventListener('touchend', () => {
+  taskLeft.addEventListener('touchend', () => {
     li.style.position = '';
     li.style.left = '';
     li.style.top = '';
