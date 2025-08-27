@@ -47,24 +47,37 @@ h1 { color:#fff; text-shadow:2px 2px 4px rgba(0,0,0,0.2); margin-bottom:20px; te
 <div id="counter"></div>
 
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
-<script>
-  // 🔹 Bloc Firebase déjà rempli avec tes clés
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyDng3b_Fmm_OxRYc3mlExOdXb_byj_iBeg",
     authDomain: "liste-de-tache123.firebaseapp.com",
     databaseURL: "https://liste-de-tache123-default-rtdb.firebaseio.com",
     projectId: "liste-de-tache123",
-    storageBucket: "liste-de-tache123.firebasestorage.app",
+    storageBucket: "liste-de-tache123.appspot.com",
     messagingSenderId: "852988497181",
     appId: "1:852988497181:web:c9922d631201aeb62d25f4"
   };
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.saveTasksToFirebase = function(username, tasks) {
+    set(ref(db, 'users/' + username + '/tasks'), tasks);
+  }
+
+  window.loadTasksFromFirebase = async function(username) {
+    const dbRef = ref(db);
+    const snapshot = await get(child(dbRef, 'users/' + username + '/tasks'));
+    return snapshot.exists() ? snapshot.val() : [];
+  }
 </script>
 
-<script>
+<script type="module">
+import { saveTasksToFirebase, loadTasksFromFirebase } from './'; // Réutilisation de fonctions globales
+
 let username='';
 const usernameContainer=document.getElementById('username-container');
 const usernameInput=document.getElementById('username-input');
@@ -84,87 +97,83 @@ let tasks=[];
 function updateCounter(){ counter.textContent=`📌 ${tasks.filter(t=>!t.completed).length} tâche(s) restante(s)`; }
 function randomColor(){ return `hsl(${Math.random()*360},70%,85%)`; }
 
-function saveTasksToFirebase(){ db.ref('users/'+username+'/tasks').set(tasks); updateCounter(); }
-function loadTasksFromFirebase(){ 
-  db.ref('users/'+username+'/tasks').once('value',snapshot=>{
-    tasks=snapshot.val()||[];
-    renderTasks();
-  });
-}
+function renderTasks(){
+  taskList.innerHTML='';
+  tasks.forEach(task=>{
+    const li=document.createElement('li');
+    li.className='task-item';
+    li.style.backgroundColor=task.color;
+    if(task.completed) li.classList.add('completed');
+    if(username==='1144fifititi*****') li.classList.add('special');
 
-function createTaskElement(task){
-  const li=document.createElement('li');
-  li.className='task-item';
-  li.style.backgroundColor=task.color;
-  if(task.completed) li.classList.add('completed');
-  if(username==='1144fifititi*****'){ li.classList.add('special'); }
+    const taskLeft=document.createElement('div'); taskLeft.className='task-left';
+    const checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=task.completed;
+    checkbox.addEventListener('change',()=>{ task.completed=checkbox.checked; li.classList.toggle('completed'); saveTasksToFirebase(username,tasks); });
 
-  const taskLeft=document.createElement('div'); taskLeft.className='task-left';
-  const checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=task.completed;
-  checkbox.addEventListener('change',()=>{ task.completed=checkbox.checked; li.classList.toggle('completed'); saveTasksToFirebase(); });
+    const dragZone=document.createElement('div'); dragZone.className='drag-zone'; dragZone.textContent=`${task.emoji||'📝'} ${task.text}`;
 
-  const dragZone=document.createElement('div'); dragZone.className='drag-zone'; dragZone.textContent=`${task.emoji||'📝'} ${task.text}`;
+    taskLeft.appendChild(checkbox); taskLeft.appendChild(dragZone);
 
-  taskLeft.appendChild(checkbox); taskLeft.appendChild(dragZone);
+    const deleteBtn=document.createElement('span'); deleteBtn.textContent='❌'; deleteBtn.className='delete-btn';
+    deleteBtn.addEventListener('click',()=>{ tasks=tasks.filter(t=>t!==task); taskList.removeChild(li); saveTasksToFirebase(username,tasks); });
 
-  const deleteBtn=document.createElement('span'); deleteBtn.textContent='❌'; deleteBtn.className='delete-btn';
-  deleteBtn.addEventListener('click',()=>{ tasks=tasks.filter(t=>t!==task); taskList.removeChild(li); saveTasksToFirebase(); });
+    li.appendChild(taskLeft); li.appendChild(deleteBtn);
 
-  li.appendChild(taskLeft); li.appendChild(deleteBtn);
-
-  // Drag mobile
-  let startY=0, placeholder=null, offsetY=0;
-  dragZone.addEventListener('touchstart',e=>{
-    startY=e.touches[0].clientY;
-    const rect=li.getBoundingClientRect();
-    offsetY=startY-rect.top;
-    placeholder=document.createElement('li');
-    placeholder.className='task-item';
-    placeholder.style.height=li.offsetHeight+'px';
-    li.parentNode.insertBefore(placeholder,li.nextSibling);
-    li.style.position='absolute'; li.style.width=li.offsetWidth+'px'; li.style.zIndex=1000;
-    li.style.left=rect.left+'px'; li.style.top=rect.top+'px';
-  });
-  dragZone.addEventListener('touchmove',e=>{
-    e.preventDefault();
-    const touchY=e.touches[0].clientY;
-    li.style.top=touchY-offsetY+'px';
-    const allItems=[...taskList.children].filter(i=>i!==li && i!==placeholder);
-    for(const item of allItems){
-      const rect=item.getBoundingClientRect();
-      if(touchY>rect.top+rect.height/2){
-        if(item.nextSibling!==placeholder) taskList.insertBefore(placeholder,item.nextSibling);
-      } else if(touchY<rect.top+rect.height/2){
-        if(item.previousSibling!==placeholder) taskList.insertBefore(placeholder,item);
-      }
-    }
-  });
-  dragZone.addEventListener('touchend',()=>{
-    li.style.position=''; li.style.left=''; li.style.top=''; li.style.zIndex=''; li.style.width='';
-    taskList.insertBefore(li,placeholder); taskList.removeChild(placeholder); placeholder=null;
-    const newTasks=[]; taskList.querySelectorAll('.task-item').forEach(item=>{
-      const dragText=item.querySelector('.drag-zone').textContent;
-      const emoji=dragText.slice(0,2);
-      const text=dragText.slice(2).trim();
-      const completed=item.querySelector('input').checked;
-      const color=item.style.backgroundColor;
-      newTasks.push({text,completed,emoji,color});
+    // Drag mobile
+    let startY=0, placeholder=null, offsetY=0;
+    dragZone.addEventListener('touchstart',e=>{
+      startY=e.touches[0].clientY;
+      const rect=li.getBoundingClientRect();
+      offsetY=startY-rect.top;
+      placeholder=document.createElement('li');
+      placeholder.className='task-item';
+      placeholder.style.height=li.offsetHeight+'px';
+      li.parentNode.insertBefore(placeholder,li.nextSibling);
+      li.style.position='absolute'; li.style.width=li.offsetWidth+'px'; li.style.zIndex=1000;
+      li.style.left=rect.left+'px'; li.style.top=rect.top+'px';
     });
-    tasks=newTasks; saveTasksToFirebase();
-  });
+    dragZone.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      const touchY=e.touches[0].clientY;
+      li.style.top=touchY-offsetY+'px';
+      const allItems=[...taskList.children].filter(i=>i!==li && i!==placeholder);
+      for(const item of allItems){
+        const rect=item.getBoundingClientRect();
+        if(touchY>rect.top+rect.height/2){
+          if(item.nextSibling!==placeholder) taskList.insertBefore(placeholder,item.nextSibling);
+        } else if(touchY<rect.top+rect.height/2){
+          if(item.previousSibling!==placeholder) taskList.insertBefore(placeholder,item);
+        }
+      }
+    });
+    dragZone.addEventListener('touchend',()=>{
+      li.style.position=''; li.style.left=''; li.style.top=''; li.style.zIndex=''; li.style.width='';
+      taskList.insertBefore(li,placeholder); taskList.removeChild(placeholder); placeholder=null;
+      const newTasks=[];
+      taskList.querySelectorAll('.task-item').forEach(item=>{
+        const dragText=item.querySelector('.drag-zone').textContent;
+        const emoji=dragText.slice(0,2);
+        const text=dragText.slice(2).trim();
+        const completed=item.querySelector('input').checked;
+        const color=item.style.backgroundColor;
+        newTasks.push({text,completed,emoji,color});
+      });
+      tasks=newTasks; saveTasksToFirebase(username,tasks);
+    });
 
-  return li;
+    taskList.appendChild(li);
+  });
+  updateCounter();
 }
 
-function renderTasks(){ taskList.innerHTML=''; tasks.forEach(task=>taskList.appendChild(createTaskElement(task))); updateCounter(); }
-
-usernameBtn.addEventListener('click',()=>{
+usernameBtn.addEventListener('click',async ()=>{
   const name=usernameInput.value.trim();
   if(name===''){alert('Veuillez entrer un username'); return;}
   username=name; usernameContainer.style.display='none'; title.style.display='block'; newTaskDiv.style.display='flex'; buttonsDiv.style.display='flex';
   if(username==='1144fifititi*****'){ document.body.style.background='linear-gradient(135deg,#ff5f6d,#ffc371)'; title.textContent='👑 Bienvenue, Éli 👑'; }
   else{ document.body.style.background='linear-gradient(120deg,#f6d365,#fda085)'; title.textContent=`📝 Gestionnaire de Tâches - ${username}`; }
-  loadTasksFromFirebase();
+  tasks = await loadTasksFromFirebase(username);
+  renderTasks();
 });
 
 addBtn.addEventListener('click',()=>{
@@ -172,8 +181,7 @@ addBtn.addEventListener('click',()=>{
   const emoji=emojiInput.value.trim()||'📝';
   if(taskText!==''){
     const task={text:taskText,completed:false,emoji,color:randomColor()};
-    tasks.push(task); taskList.appendChild(createTaskElement(task)); taskInput.value=''; emojiInput.value='';
-    saveTasksToFirebase();
+    tasks.push(task); renderTasks(); taskInput.value=''; emojiInput.value=''; saveTasksToFirebase(username,tasks);
   }
 });
 
@@ -181,7 +189,7 @@ taskInput.addEventListener('keypress',e=>{if(e.key==='Enter') addBtn.click();});
 emojiInput.addEventListener('keypress',e=>{if(e.key==='Enter') addBtn.click();});
 
 clearBtn.addEventListener('click',()=>{
-  if(confirm('Voulez-vous vraiment tout effacer ?')){ tasks=[]; renderTasks(); saveTasksToFirebase(); }
+  if(confirm('Voulez-vous vraiment tout effacer ?')){ tasks=[]; renderTasks(); saveTasksToFirebase(username,tasks); }
 });
 </script>
 
