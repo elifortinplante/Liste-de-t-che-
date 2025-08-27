@@ -164,34 +164,40 @@ function createTaskElement(task) {
   li.appendChild(taskLeft);
   li.appendChild(deleteBtn);
 
-  // Drag only on dragZone
+  // Drag only on dragZone with correct up & down detection
   let startY = 0;
   let placeholder = null;
+  let offsetY = 0;
 
   dragZone.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
+    const rect = li.getBoundingClientRect();
+    offsetY = startY - rect.top;
+
     placeholder = document.createElement('li');
     placeholder.className = 'task-item';
     placeholder.style.height = li.offsetHeight + 'px';
     li.parentNode.insertBefore(placeholder, li.nextSibling);
+
     li.style.position = 'absolute';
     li.style.width = li.offsetWidth + 'px';
     li.style.zIndex = 1000;
-    li.style.left = li.getBoundingClientRect().left + 'px';
-    li.style.top = li.getBoundingClientRect().top + 'px';
+    li.style.left = rect.left + 'px';
+    li.style.top = rect.top + 'px';
   });
 
   dragZone.addEventListener('touchmove', e => {
     e.preventDefault();
     const touchY = e.touches[0].clientY;
-    li.style.top = li.offsetTop + (touchY - startY) + 'px';
-    startY = touchY;
-    const allItems = [...taskList.children].filter(i => i !== li);
+    li.style.top = touchY - offsetY + 'px';
+
+    const allItems = [...taskList.children].filter(i => i !== li && i !== placeholder);
     for(const item of allItems) {
       const rect = item.getBoundingClientRect();
-      if(touchY > rect.top && touchY < rect.bottom) {
-        taskList.insertBefore(placeholder, item.nextSibling);
-        break;
+      if(touchY > rect.top + rect.height/2) {
+        if(item.nextSibling !== placeholder) taskList.insertBefore(placeholder, item.nextSibling);
+      } else if(touchY < rect.top + rect.height/2) {
+        if(item.previousSibling !== placeholder) taskList.insertBefore(placeholder, item);
       }
     }
   });
@@ -205,7 +211,7 @@ function createTaskElement(task) {
     taskList.insertBefore(li, placeholder);
     taskList.removeChild(placeholder);
     placeholder = null;
-    // Update tasks order
+
     const newTasks = [];
     taskList.querySelectorAll('.task-item').forEach(item => {
       const dragText = item.querySelector('.drag-zone').textContent;
