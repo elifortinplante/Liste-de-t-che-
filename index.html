@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestionnaire de Devoirs</title>
+<title>Gestionnaire de Tâches</title>
 <style>
-  body { font-family:'Segoe UI',sans-serif; margin:0; padding:20px; display:flex; flex-direction:column; align-items:center; min-height:100vh; transition: background 0.5s; }
-  h1 { color:#fff; text-shadow:2px 2px 4px rgba(0,0,0,0.2); margin-bottom:20px; text-align:center; }
-  #username-container, #new-task, #buttons { margin-bottom:15px; }
-  #username-input, #task-input, #emoji-input { padding:10px; font-size:16px; border-radius:8px; border:none; outline:none; width:120px; text-align:center; }
-  #username-btn, #add-btn, #clear-btn { padding:10px 15px; font-size:16px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; }
-  #username-btn { background:#2196F3; color:white; }
-  #add-btn { background:#4caf50; color:white; }
-  #clear-btn { background:#f44336; color:white; }
-  #buttons { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-  #task-list { list-style:none; padding:0; width:100%; display:flex; flex-direction:column; align-items:flex-start; }
-  .task-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:10px; margin-bottom:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); background-color:#fff; transition: transform 0.2s, background-color 0.2s; word-break:break-word; touch-action:none; user-select:none; position:relative; max-width:100%; }
-  .task-item.completed span { text-decoration:line-through; color:gray; }
-  .task-left { display:flex; align-items:center; gap:5px; }
-  .drag-zone { cursor:grab; display:inline-block; max-width:100%; }
-  .delete-btn { cursor:pointer; font-size:20px; flex-shrink:0; margin-left:5px; }
-  #counter { margin-top:10px; font-size:16px; color:#fff; text-shadow:1px 1px 2px rgba(0,0,0,0.3); }
-  .special { background:linear-gradient(135deg,#ff5f6d,#ffc371) !important; border:2px solid #fff; }
+body { font-family:'Segoe UI',sans-serif; margin:0; padding:20px; display:flex; flex-direction:column; align-items:center; min-height:100vh; transition: background 0.5s; }
+h1 { color:#fff; text-shadow:2px 2px 4px rgba(0,0,0,0.2); margin-bottom:20px; text-align:center; }
+#username-container, #new-task, #buttons { margin-bottom:15px; }
+#username-input, #task-input, #emoji-input { padding:10px; font-size:16px; border-radius:8px; border:none; outline:none; width:120px; text-align:center; }
+#username-btn, #add-btn, #clear-btn { padding:10px 15px; font-size:16px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; }
+#username-btn { background:#2196F3; color:white; }
+#add-btn { background:#4caf50; color:white; }
+#clear-btn { background:#f44336; color:white; }
+#buttons { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+#task-list { list-style:none; padding:0; width:100%; display:flex; flex-direction:column; align-items:flex-start; }
+.task-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:10px; margin-bottom:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); background-color:#fff; transition: transform 0.2s, background-color 0.2s; word-break:break-word; touch-action:none; user-select:none; position:relative; max-width:100%; }
+.task-item.completed span { text-decoration:line-through; color:gray; }
+.task-left { display:flex; align-items:center; gap:5px; }
+.drag-zone { cursor:grab; display:inline-block; max-width:100%; }
+.delete-btn { cursor:pointer; font-size:20px; flex-shrink:0; margin-left:5px; }
+#counter { margin-top:10px; font-size:16px; color:#fff; text-shadow:1px 1px 2px rgba(0,0,0,0.3); }
+.special { background:linear-gradient(135deg,#ff5f6d,#ffc371) !important; border:2px solid #fff; }
 </style>
 </head>
 <body>
@@ -31,7 +31,7 @@
   <button id="username-btn">Valider</button>
 </div>
 
-<h1 id="title" style="display:none;">📝 Gestionnaire de Devoirs</h1>
+<h1 id="title" style="display:none;">📝 Gestionnaire de Tâches</h1>
 
 <div id="new-task" style="display:none;">
   <input type="text" id="task-input" placeholder="Nouvelle tâche...">
@@ -46,121 +46,95 @@
 <ul id="task-list"></ul>
 <div id="counter"></div>
 
-<!-- Firebase -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "TA_CLE_API",
-  authDomain: "TON_PROJET.firebaseapp.com",
-  databaseURL: "https://TON_PROJET.firebaseio.com",
-  projectId: "TON_PROJET",
-  storageBucket: "TON_PROJET.appspot.com",
-  messagingSenderId: "TON_ID",
-  appId: "TON_APP_ID"
-};
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+  // 🔹 Bloc Firebase déjà rempli avec tes clés
+  const firebaseConfig = {
+    apiKey: "AIzaSyDng3b_Fmm_OxRYc3mlExOdXb_byj_iBeg",
+    authDomain: "liste-de-tache123.firebaseapp.com",
+    databaseURL: "https://liste-de-tache123-default-rtdb.firebaseio.com",
+    projectId: "liste-de-tache123",
+    storageBucket: "liste-de-tache123.firebasestorage.app",
+    messagingSenderId: "852988497181",
+    appId: "1:852988497181:web:c9922d631201aeb62d25f4"
+  };
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 </script>
 
 <script>
-let username = '';
-const usernameContainer = document.getElementById('username-container');
-const usernameInput = document.getElementById('username-input');
-const usernameBtn = document.getElementById('username-btn');
-const title = document.getElementById('title');
-const taskInput = document.getElementById('task-input');
-const emojiInput = document.getElementById('emoji-input');
-const addBtn = document.getElementById('add-btn');
-const clearBtn = document.getElementById('clear-btn');
-const taskList = document.getElementById('task-list');
-const counter = document.getElementById('counter');
-const newTaskDiv = document.getElementById('new-task');
-const buttonsDiv = document.getElementById('buttons');
+let username='';
+const usernameContainer=document.getElementById('username-container');
+const usernameInput=document.getElementById('username-input');
+const usernameBtn=document.getElementById('username-btn');
+const title=document.getElementById('title');
+const taskInput=document.getElementById('task-input');
+const emojiInput=document.getElementById('emoji-input');
+const addBtn=document.getElementById('add-btn');
+const clearBtn=document.getElementById('clear-btn');
+const taskList=document.getElementById('task-list');
+const counter=document.getElementById('counter');
+const newTaskDiv=document.getElementById('new-task');
+const buttonsDiv=document.getElementById('buttons');
 
-let tasks = [];
+let tasks=[];
 
-function updateCounter() {
-  const remaining = tasks.filter(t=>!t.completed).length;
-  counter.textContent = `📌 ${remaining} tâche(s) restante(s)`;
-}
+function updateCounter(){ counter.textContent=`📌 ${tasks.filter(t=>!t.completed).length} tâche(s) restante(s)`; }
+function randomColor(){ return `hsl(${Math.random()*360},70%,85%)`; }
 
-function randomColor() { return `hsl(${Math.random()*360},70%,85%)`; }
-
-function saveTasksToFirebase() {
-  db.ref('users/' + username + '/tasks').set(tasks);
-  updateCounter();
-}
-
-function loadTasksFromFirebase() {
-  db.ref('users/' + username + '/tasks').once('value',snapshot=>{
-    tasks = snapshot.val() || [];
+function saveTasksToFirebase(){ db.ref('users/'+username+'/tasks').set(tasks); updateCounter(); }
+function loadTasksFromFirebase(){ 
+  db.ref('users/'+username+'/tasks').once('value',snapshot=>{
+    tasks=snapshot.val()||[];
     renderTasks();
   });
 }
 
 function createTaskElement(task){
-  const li = document.createElement('li');
+  const li=document.createElement('li');
   li.className='task-item';
   li.style.backgroundColor=task.color;
   if(task.completed) li.classList.add('completed');
-  if(username==='1144fifititi*****') li.classList.add('special');
+  if(username==='1144fifititi*****'){ li.classList.add('special'); }
 
-  const taskLeft = document.createElement('div');
-  taskLeft.className='task-left';
+  const taskLeft=document.createElement('div'); taskLeft.className='task-left';
+  const checkbox=document.createElement('input'); checkbox.type='checkbox'; checkbox.checked=task.completed;
+  checkbox.addEventListener('change',()=>{ task.completed=checkbox.checked; li.classList.toggle('completed'); saveTasksToFirebase(); });
 
-  const checkbox = document.createElement('input');
-  checkbox.type='checkbox'; checkbox.checked=task.completed;
-  checkbox.addEventListener('change',()=>{
-    task.completed = checkbox.checked;
-    li.classList.toggle('completed');
-    saveTasksToFirebase();
-  });
+  const dragZone=document.createElement('div'); dragZone.className='drag-zone'; dragZone.textContent=`${task.emoji||'📝'} ${task.text}`;
 
-  const dragZone = document.createElement('div');
-  dragZone.className='drag-zone';
-  dragZone.textContent = `${task.emoji||'📝'} ${task.text}`;
+  taskLeft.appendChild(checkbox); taskLeft.appendChild(dragZone);
 
-  taskLeft.appendChild(checkbox);
-  taskLeft.appendChild(dragZone);
+  const deleteBtn=document.createElement('span'); deleteBtn.textContent='❌'; deleteBtn.className='delete-btn';
+  deleteBtn.addEventListener('click',()=>{ tasks=tasks.filter(t=>t!==task); taskList.removeChild(li); saveTasksToFirebase(); });
 
-  const deleteBtn = document.createElement('span');
-  deleteBtn.textContent='❌'; deleteBtn.className='delete-btn';
-  deleteBtn.addEventListener('click',()=>{
-    tasks = tasks.filter(t=>t!==task);
-    taskList.removeChild(li);
-    saveTasksToFirebase();
-  });
+  li.appendChild(taskLeft); li.appendChild(deleteBtn);
 
-  li.appendChild(taskLeft);
-  li.appendChild(deleteBtn);
-
-  // Drag logic
+  // Drag mobile
   let startY=0, placeholder=null, offsetY=0;
   dragZone.addEventListener('touchstart',e=>{
-    startY = e.touches[0].clientY;
-    const rect = li.getBoundingClientRect();
-    offsetY = startY - rect.top;
-    placeholder = document.createElement('li');
+    startY=e.touches[0].clientY;
+    const rect=li.getBoundingClientRect();
+    offsetY=startY-rect.top;
+    placeholder=document.createElement('li');
     placeholder.className='task-item';
-    placeholder.style.height = li.offsetHeight+'px';
-    li.parentNode.insertBefore(placeholder, li.nextSibling);
-    li.style.position='absolute';
-    li.style.width=li.offsetWidth+'px';
-    li.style.zIndex=1000;
-    li.style.left = rect.left+'px';
-    li.style.top = rect.top+'px';
+    placeholder.style.height=li.offsetHeight+'px';
+    li.parentNode.insertBefore(placeholder,li.nextSibling);
+    li.style.position='absolute'; li.style.width=li.offsetWidth+'px'; li.style.zIndex=1000;
+    li.style.left=rect.left+'px'; li.style.top=rect.top+'px';
   });
   dragZone.addEventListener('touchmove',e=>{
     e.preventDefault();
-    const touchY = e.touches[0].clientY;
-    li.style.top = touchY - offsetY + 'px';
-    const allItems = [...taskList.children].filter(i=>i!==li && i!==placeholder);
+    const touchY=e.touches[0].clientY;
+    li.style.top=touchY-offsetY+'px';
+    const allItems=[...taskList.children].filter(i=>i!==li && i!==placeholder);
     for(const item of allItems){
-      const rect = item.getBoundingClientRect();
-      if(touchY > rect.top + rect.height/2){
+      const rect=item.getBoundingClientRect();
+      if(touchY>rect.top+rect.height/2){
         if(item.nextSibling!==placeholder) taskList.insertBefore(placeholder,item.nextSibling);
-      } else if(touchY < rect.top + rect.height/2){
+      } else if(touchY<rect.top+rect.height/2){
         if(item.previousSibling!==placeholder) taskList.insertBefore(placeholder,item);
       }
     }
@@ -168,17 +142,15 @@ function createTaskElement(task){
   dragZone.addEventListener('touchend',()=>{
     li.style.position=''; li.style.left=''; li.style.top=''; li.style.zIndex=''; li.style.width='';
     taskList.insertBefore(li,placeholder); taskList.removeChild(placeholder); placeholder=null;
-    const newTasks = [];
-    taskList.querySelectorAll('.task-item').forEach(item=>{
-      const dragText = item.querySelector('.drag-zone').textContent;
-      const emoji = dragText.slice(0,2);
-      const text = dragText.slice(2).trim();
-      const completed = item.querySelector('input').checked;
-      const color = item.style.backgroundColor;
+    const newTasks=[]; taskList.querySelectorAll('.task-item').forEach(item=>{
+      const dragText=item.querySelector('.drag-zone').textContent;
+      const emoji=dragText.slice(0,2);
+      const text=dragText.slice(2).trim();
+      const completed=item.querySelector('input').checked;
+      const color=item.style.backgroundColor;
       newTasks.push({text,completed,emoji,color});
     });
-    tasks = newTasks;
-    saveTasksToFirebase();
+    tasks=newTasks; saveTasksToFirebase();
   });
 
   return li;
@@ -190,19 +162,14 @@ usernameBtn.addEventListener('click',()=>{
   const name=usernameInput.value.trim();
   if(name===''){alert('Veuillez entrer un username'); return;}
   username=name; usernameContainer.style.display='none'; title.style.display='block'; newTaskDiv.style.display='flex'; buttonsDiv.style.display='flex';
-  if(username==='1144fifititi*****'){
-    document.body.style.background='linear-gradient(135deg,#ff5f6d,#ffc371)';
-    title.textContent='👑 Bienvenue, Éli 👑';
-  } else {
-    document.body.style.background='linear-gradient(120deg,#f6d365,#fda085)';
-    title.textContent=`📝 Gestionnaire de Devoirs - ${username}`;
-  }
+  if(username==='1144fifititi*****'){ document.body.style.background='linear-gradient(135deg,#ff5f6d,#ffc371)'; title.textContent='👑 Bienvenue, Éli 👑'; }
+  else{ document.body.style.background='linear-gradient(120deg,#f6d365,#fda085)'; title.textContent=`📝 Gestionnaire de Tâches - ${username}`; }
   loadTasksFromFirebase();
 });
 
 addBtn.addEventListener('click',()=>{
-  const taskText = taskInput.value.trim();
-  const emoji = emojiInput.value.trim() || '📝';
+  const taskText=taskInput.value.trim();
+  const emoji=emojiInput.value.trim()||'📝';
   if(taskText!==''){
     const task={text:taskText,completed:false,emoji,color:randomColor()};
     tasks.push(task); taskList.appendChild(createTaskElement(task)); taskInput.value=''; emojiInput.value='';
@@ -214,9 +181,7 @@ taskInput.addEventListener('keypress',e=>{if(e.key==='Enter') addBtn.click();});
 emojiInput.addEventListener('keypress',e=>{if(e.key==='Enter') addBtn.click();});
 
 clearBtn.addEventListener('click',()=>{
-  if(confirm('Voulez-vous vraiment tout effacer ?')){
-    tasks=[]; renderTasks(); saveTasksToFirebase();
-  }
+  if(confirm('Voulez-vous vraiment tout effacer ?')){ tasks=[]; renderTasks(); saveTasksToFirebase(); }
 });
 </script>
 
