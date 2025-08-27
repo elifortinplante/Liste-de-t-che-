@@ -187,10 +187,10 @@ usernameBtn.addEventListener('click',()=>{
   buttonsDiv.style.display='flex';
   if(username==='1144fifititi*****'){
     document.body.style.background='linear-gradient(135deg,#ff5f6d,#ffc371)';
-    title.textContent='👑 Bienvenue, Maître 1144fifititi***** 👑';
+    title.textContent='👑 Bienvenue, Éli 👑';
   } else {
     document.body.style.background='linear-gradient(120deg,#f6d365,#fda085)';
-    title.textContent='📝 Gestionnaire de Devoirs';
+    title.textContent=`📝 Gestionnaire de Devoirs - ${username}`;
   }
   loadTasks();
   renderTasks();
