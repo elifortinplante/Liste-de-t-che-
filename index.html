@@ -46,22 +46,7 @@ h1 { color:#fff; text-shadow:2px 2px 4px rgba(0,0,0,0.2); margin-bottom:20px; te
 <ul id="task-list"></ul>
 <div id="counter"></div>
 
-<!-- Firebase v8 -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDng3b_Fmm_OxRYc3mlExOdXb_byj_iBeg",
-  authDomain: "liste-de-tache123.firebaseapp.com",
-  databaseURL: "https://liste-de-tache123-default-rtdb.firebaseio.com",
-  projectId: "liste-de-tache123",
-  storageBucket: "liste-de-tache123.appspot.com",
-  messagingSenderId: "852988497181",
-  appId: "1:852988497181:web:c9922d631201aeb62d25f4"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
 let username='';
 let tasks=[];
 
@@ -78,17 +63,21 @@ const counter=document.getElementById('counter');
 const newTaskDiv=document.getElementById('new-task');
 const buttonsDiv=document.getElementById('buttons');
 
-function updateCounter(){ counter.textContent=`📌 ${tasks.filter(t=>!t.completed).length} tâche(s) restante(s)`; }
-function randomColor(){ return `hsl(${Math.random()*360},70%,85%)`; }
-
-function saveTasks(){ firebase.database().ref('users/'+username+'/tasks').set(tasks); updateCounter(); }
-
-function loadTasks(callback){
-  firebase.database().ref('users/'+username+'/tasks').once('value',snap=>{
-    tasks = snap.val() || [];
-    callback();
-  });
+function saveTasks(){
+  localStorage.setItem('tasks_'+username, JSON.stringify(tasks));
+  updateCounter();
 }
+
+function loadTasks(){
+  const saved=localStorage.getItem('tasks_'+username);
+  tasks=saved?JSON.parse(saved):[];
+}
+
+function updateCounter(){
+  counter.textContent=`📌 ${tasks.filter(t=>!t.completed).length} tâche(s) restante(s)`;
+}
+
+function randomColor(){ return `hsl(${Math.random()*360},70%,85%)`; }
 
 function renderTasks(){
   taskList.innerHTML='';
@@ -160,24 +149,30 @@ function renderTasks(){
 
 usernameBtn.addEventListener('click',()=>{
   const name=usernameInput.value.trim();
-  if(name===''){alert('Veuillez entrer un username'); return;}
+  if(!name){alert('Veuillez entrer un username'); return;}
   username=name;
   usernameContainer.style.display='none';
   title.style.display='block';
   newTaskDiv.style.display='flex';
   buttonsDiv.style.display='flex';
-  if(username==='1144fifititi*****'){ document.body.style.background='linear-gradient(135deg,#ff5f6d,#ffc371)'; title.textContent='👑 Bienvenue, Éli 👑'; }
-  else{ document.body.style.background='linear-gradient(120deg,#f6d365,#fda085)'; title.textContent=`📝 Gestionnaire de Tâches - ${username}`; }
-
-  loadTasks(renderTasks);
+  if(username==='1144fifititi*****'){
+    document.body.style.background='linear-gradient(135deg,#ff5f6d,#ffc371)';
+    title.textContent='👑 Bienvenue, Éli 👑';
+  } else{
+    document.body.style.background='linear-gradient(120deg,#f6d365,#fda085)';
+    title.textContent=`📝 Gestionnaire de Tâches - ${username}`;
+  }
+  loadTasks();
+  renderTasks();
 });
 
 addBtn.addEventListener('click',()=>{
   const taskText=taskInput.value.trim();
   const emoji=emojiInput.value.trim()||'📝';
-  if(taskText!==''){
-    const task={text:taskText,completed:false,emoji,color:randomColor()};
-    tasks.push(task); renderTasks(); taskInput.value=''; emojiInput.value=''; saveTasks();
+  if(taskText){
+    tasks.push({text:taskText,completed:false,emoji,color:randomColor()});
+    taskInput.value=''; emojiInput.value='';
+    renderTasks(); saveTasks();
   }
 });
 
