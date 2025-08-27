@@ -19,19 +19,23 @@
     color: #fff;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     margin-bottom: 20px;
+    text-align: center;
   }
   #new-task {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 15px;
+    justify-content: center;
   }
-  #task-input {
+  #task-input, #emoji-input {
     padding: 10px;
     font-size: 16px;
-    width: 250px;
     border-radius: 8px;
     border: none;
     outline: none;
+    width: 120px;
+    text-align: center;
   }
   #add-btn, #clear-btn {
     padding: 10px 15px;
@@ -43,11 +47,12 @@
   }
   #add-btn { background-color: #4caf50; color: white; }
   #clear-btn { background-color: #f44336; color: white; }
-  #buttons { display: flex; gap: 10px; margin-bottom: 10px; }
+  #buttons { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
   #task-list {
     list-style: none;
     padding: 0;
-    width: 360px;
+    width: 90%;
+    max-width: 400px;
   }
   .task-item {
     display: flex;
@@ -60,22 +65,18 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     background-color: #fff;
     transition: transform 0.2s, background-color 0.2s;
+    word-break: break-word;
   }
   .task-item.completed span {
     text-decoration: line-through;
     color: gray;
   }
   .task-left { display: flex; align-items: center; gap: 10px; }
-  .delete-btn {
-    cursor: pointer;
-    font-size: 20px;
-    margin-left: 5px;
-  }
-  #counter {
-    margin-top: 10px;
-    font-size: 16px;
-    color: #fff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  .delete-btn { cursor: pointer; font-size: 20px; margin-left: 5px; }
+  #counter { margin-top: 10px; font-size: 16px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+  @media (max-width: 480px) {
+    #task-input, #emoji-input { width: 80px; font-size: 14px; }
+    #add-btn, #clear-btn { font-size: 14px; padding: 8px 10px; }
   }
 </style>
 </head>
@@ -85,6 +86,7 @@
 
 <div id="new-task">
   <input type="text" id="task-input" placeholder="Nouvelle tâche...">
+  <input type="text" id="emoji-input" placeholder="Emoji">
   <button id="add-btn">Ajouter</button>
 </div>
 
@@ -97,12 +99,11 @@
 
 <script>
   const taskInput = document.getElementById('task-input');
+  const emojiInput = document.getElementById('emoji-input');
   const addBtn = document.getElementById('add-btn');
   const clearBtn = document.getElementById('clear-btn');
   const taskList = document.getElementById('task-list');
   const counter = document.getElementById('counter');
-
-  const emojis = ['📚','✏️','🖍️','📖','📝','🎒','🔖','📎','💡','🧠'];
 
   let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
@@ -116,15 +117,15 @@
     counter.textContent = `📌 ${remaining} tâche(s) restante(s)`;
   }
 
-  function randomEmoji() {
-    return emojis[Math.floor(Math.random() * emojis.length)];
+  function randomColor() {
+    return `hsl(${Math.random()*360}, 70%, 85%)`;
   }
 
   function createTaskElement(task) {
     const li = document.createElement('li');
     li.className = 'task-item';
     li.draggable = true;
-    li.style.backgroundColor = task.color || `hsl(${Math.random()*360}, 70%, 85%)`;
+    li.style.backgroundColor = task.color;
     if(task.completed) li.classList.add('completed');
 
     const taskLeft = document.createElement('div');
@@ -140,7 +141,7 @@
     });
 
     const span = document.createElement('span');
-    span.textContent = `${task.emoji || randomEmoji()} ${task.text}`;
+    span.textContent = `${task.emoji || '📝'} ${task.text}`;
 
     taskLeft.appendChild(checkbox);
     taskLeft.appendChild(span);
@@ -157,14 +158,13 @@
     li.appendChild(taskLeft);
     li.appendChild(deleteBtn);
 
-    // Drag & Drop
     li.addEventListener('dragstart', () => li.classList.add('dragging'));
     li.addEventListener('dragend', () => {
       li.classList.remove('dragging');
       const newTasks = [];
       taskList.querySelectorAll('.task-item').forEach(item => {
         const spanText = item.querySelector('span').textContent;
-        const emoji = spanText.slice(0,2); // récupère l'emoji
+        const emoji = spanText.slice(0,2);
         const text = spanText.slice(2).trim();
         const completed = item.querySelector('input').checked;
         const color = item.style.backgroundColor;
@@ -185,18 +185,19 @@
 
   addBtn.addEventListener('click', () => {
     const taskText = taskInput.value.trim();
+    const emoji = emojiInput.value.trim() || '📝';
     if(taskText !== '') {
-      const task = { text: taskText, completed: false, emoji: randomEmoji(), color: `hsl(${Math.random()*360}, 70%, 85%)` };
+      const task = { text: taskText, completed: false, emoji, color: randomColor() };
       tasks.push(task);
       taskList.appendChild(createTaskElement(task));
       taskInput.value = '';
+      emojiInput.value = '';
       saveTasks();
     }
   });
 
-  taskInput.addEventListener('keypress', e => {
-    if(e.key === 'Enter') addBtn.click();
-  });
+  taskInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
+  emojiInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
 
   clearBtn.addEventListener('click', () => {
     if(confirm('Voulez-vous vraiment tout effacer ?')) {
@@ -219,7 +220,7 @@
     return draggableElements.reduce((closest, child) => {
       const box = child.getBoundingClientRect();
       const offset = y - box.top - box.height / 2;
-      if(offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+      if(offset < 0 && offset > closest.offset) return { offset, element: child };
       else return closest;
     }, { offset: Number.NEGATIVE_INFINITY }).element;
   }
