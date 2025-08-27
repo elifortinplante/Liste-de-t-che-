@@ -73,12 +73,8 @@
     text-decoration: line-through;
     color: gray;
   }
-  .task-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-  }
+  .task-left { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .drag-zone { flex: 1; padding: 0 5px; cursor: grab; }
   .delete-btn { cursor: pointer; font-size: 20px; margin-left: 5px; flex-shrink: 0; }
   #counter { margin-top: 10px; font-size: 16px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
   @media (max-width: 480px) {
@@ -149,8 +145,12 @@ function createTaskElement(task) {
   const span = document.createElement('span');
   span.textContent = `${task.emoji || '📝'} ${task.text}`;
 
+  const dragZone = document.createElement('div');
+  dragZone.className = 'drag-zone';
+  dragZone.appendChild(span);
+
   taskLeft.appendChild(checkbox);
-  taskLeft.appendChild(span);
+  taskLeft.appendChild(dragZone);
 
   const deleteBtn = document.createElement('span');
   deleteBtn.textContent = '❌';
@@ -164,11 +164,11 @@ function createTaskElement(task) {
   li.appendChild(taskLeft);
   li.appendChild(deleteBtn);
 
-  // Drag only on taskLeft (zone texte + emoji + checkbox)
+  // Drag only on dragZone
   let startY = 0;
   let placeholder = null;
 
-  taskLeft.addEventListener('touchstart', e => {
+  dragZone.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
     placeholder = document.createElement('li');
     placeholder.className = 'task-item';
@@ -181,7 +181,7 @@ function createTaskElement(task) {
     li.style.top = li.getBoundingClientRect().top + 'px';
   });
 
-  taskLeft.addEventListener('touchmove', e => {
+  dragZone.addEventListener('touchmove', e => {
     e.preventDefault();
     const touchY = e.touches[0].clientY;
     li.style.top = li.offsetTop + (touchY - startY) + 'px';
@@ -196,7 +196,7 @@ function createTaskElement(task) {
     }
   });
 
-  taskLeft.addEventListener('touchend', () => {
+  dragZone.addEventListener('touchend', () => {
     li.style.position = '';
     li.style.left = '';
     li.style.top = '';
