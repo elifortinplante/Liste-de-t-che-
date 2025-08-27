@@ -3,100 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestionnaire de Devoirs Mobile</title>
+<title>Gestionnaire de Devoirs</title>
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(120deg, #f6d365, #fda085);
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-  }
-  h1 {
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  #new-task {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 15px;
-    justify-content: center;
-  }
-  #task-input, #emoji-input {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    width: 120px;
-    text-align: center;
-  }
-  #add-btn, #clear-btn {
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  #add-btn { background-color: #4caf50; color: white; }
-  #clear-btn { background-color: #f44336; color: white; }
-  #buttons { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
-  #task-list {
-    list-style: none;
-    padding: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .task-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    background-color: #fff;
-    transition: transform 0.2s, background-color 0.2s;
-    word-break: break-word;
-    touch-action: none;
-    user-select: none;
-    position: relative;
-    max-width: 100%;
-  }
-  .task-item.completed span {
-    text-decoration: line-through;
-    color: gray;
-  }
-  .task-left { display: flex; align-items: center; gap: 5px; }
-  .drag-zone { cursor: grab; display: inline-block; max-width: 100%; }
-  .delete-btn { cursor: pointer; font-size: 20px; flex-shrink: 0; margin-left: 5px; }
-  #counter { margin-top: 10px; font-size: 16px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-  @media (max-width: 480px) {
-    #task-input, #emoji-input { width: 80px; font-size: 14px; }
-    #add-btn, #clear-btn { font-size: 14px; padding: 8px 10px; }
-  }
+  body { font-family: 'Segoe UI', sans-serif; margin:0; padding:20px; display:flex; flex-direction:column; align-items:center; min-height:100vh; transition: background 0.5s; }
+  h1 { color:#fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); margin-bottom:20px; text-align:center; }
+  #username-container, #new-task, #buttons { margin-bottom:15px; }
+  #username-input, #task-input, #emoji-input { padding:10px; font-size:16px; border-radius:8px; border:none; outline:none; width:120px; text-align:center; }
+  #username-btn, #add-btn, #clear-btn { padding:10px 15px; font-size:16px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; }
+  #username-btn { background:#2196F3; color:white; }
+  #add-btn { background:#4caf50; color:white; }
+  #clear-btn { background:#f44336; color:white; }
+  #buttons { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  #task-list { list-style:none; padding:0; width:100%; display:flex; flex-direction:column; align-items:flex-start; }
+  .task-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:10px; margin-bottom:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); background-color:#fff; transition: transform 0.2s, background-color 0.2s; word-break:break-word; touch-action:none; user-select:none; position:relative; max-width:100%; }
+  .task-item.completed span { text-decoration:line-through; color:gray; }
+  .task-left { display:flex; align-items:center; gap:5px; }
+  .drag-zone { cursor:grab; display:inline-block; max-width:100%; }
+  .delete-btn { cursor:pointer; font-size:20px; flex-shrink:0; margin-left:5px; }
+  #counter { margin-top:10px; font-size:16px; color:#fff; text-shadow:1px 1px 2px rgba(0,0,0,0.3); }
+  .special { background:linear-gradient(135deg,#ff5f6d,#ffc371) !important; border:2px solid #fff; }
 </style>
 </head>
 <body>
 
-<h1>📝 Gestionnaire de Devoirs Mobile</h1>
+<div id="username-container">
+  <input type="text" id="username-input" placeholder="Entrez votre username">
+  <button id="username-btn">Valider</button>
+</div>
 
-<div id="new-task">
+<h1 id="title" style="display:none;">📝 Gestionnaire de Devoirs</h1>
+
+<div id="new-task" style="display:none;">
   <input type="text" id="task-input" placeholder="Nouvelle tâche...">
   <input type="text" id="emoji-input" placeholder="Emoji">
   <button id="add-btn">Ajouter</button>
 </div>
 
-<div id="buttons">
+<div id="buttons" style="display:none;">
   <button id="clear-btn">Tout effacer</button>
 </div>
 
@@ -104,22 +47,33 @@
 <div id="counter"></div>
 
 <script>
+let username = '';
+const usernameContainer = document.getElementById('username-container');
+const usernameInput = document.getElementById('username-input');
+const usernameBtn = document.getElementById('username-btn');
+const title = document.getElementById('title');
 const taskInput = document.getElementById('task-input');
 const emojiInput = document.getElementById('emoji-input');
 const addBtn = document.getElementById('add-btn');
 const clearBtn = document.getElementById('clear-btn');
 const taskList = document.getElementById('task-list');
 const counter = document.getElementById('counter');
+const newTaskDiv = document.getElementById('new-task');
+const buttonsDiv = document.getElementById('buttons');
 
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+let tasks = [];
 
 function saveTasks() {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
+  localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
   updateCounter();
 }
 
+function loadTasks() {
+  tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || [];
+}
+
 function updateCounter() {
-  const remaining = tasks.filter(t => !t.completed).length;
+  const remaining = tasks.filter(t=>!t.completed).length;
   counter.textContent = `📌 ${remaining} tâche(s) restante(s)`;
 }
 
@@ -132,31 +86,32 @@ function createTaskElement(task) {
   li.className = 'task-item';
   li.style.backgroundColor = task.color;
   if(task.completed) li.classList.add('completed');
+  if(username==='1144fifititi*****') li.classList.add('special');
 
   const taskLeft = document.createElement('div');
   taskLeft.className = 'task-left';
 
   const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.checked = task.completed;
-  checkbox.addEventListener('change', () => {
+  checkbox.type='checkbox';
+  checkbox.checked=task.completed;
+  checkbox.addEventListener('change',()=>{
     task.completed = checkbox.checked;
     li.classList.toggle('completed');
     saveTasks();
   });
 
   const dragZone = document.createElement('div');
-  dragZone.className = 'drag-zone';
-  dragZone.textContent = `${task.emoji || '📝'} ${task.text}`;
+  dragZone.className='drag-zone';
+  dragZone.textContent = `${task.emoji||'📝'} ${task.text}`;
 
   taskLeft.appendChild(checkbox);
   taskLeft.appendChild(dragZone);
 
   const deleteBtn = document.createElement('span');
-  deleteBtn.textContent = '❌';
-  deleteBtn.className = 'delete-btn';
-  deleteBtn.addEventListener('click', () => {
-    tasks = tasks.filter(t => t !== task);
+  deleteBtn.textContent='❌';
+  deleteBtn.className='delete-btn';
+  deleteBtn.addEventListener('click',()=>{
+    tasks = tasks.filter(t=>t!==task);
     taskList.removeChild(li);
     saveTasks();
   });
@@ -164,62 +119,50 @@ function createTaskElement(task) {
   li.appendChild(taskLeft);
   li.appendChild(deleteBtn);
 
-  // Drag only on dragZone with correct up & down detection
-  let startY = 0;
-  let placeholder = null;
-  let offsetY = 0;
-
-  dragZone.addEventListener('touchstart', e => {
+  // Drag logic with up & down movement
+  let startY=0, placeholder=null, offsetY=0;
+  dragZone.addEventListener('touchstart',e=>{
     startY = e.touches[0].clientY;
     const rect = li.getBoundingClientRect();
     offsetY = startY - rect.top;
-
     placeholder = document.createElement('li');
-    placeholder.className = 'task-item';
-    placeholder.style.height = li.offsetHeight + 'px';
+    placeholder.className='task-item';
+    placeholder.style.height = li.offsetHeight+'px';
     li.parentNode.insertBefore(placeholder, li.nextSibling);
-
-    li.style.position = 'absolute';
-    li.style.width = li.offsetWidth + 'px';
-    li.style.zIndex = 1000;
-    li.style.left = rect.left + 'px';
-    li.style.top = rect.top + 'px';
+    li.style.position='absolute';
+    li.style.width=li.offsetWidth+'px';
+    li.style.zIndex=1000;
+    li.style.left = rect.left+'px';
+    li.style.top = rect.top+'px';
   });
 
-  dragZone.addEventListener('touchmove', e => {
+  dragZone.addEventListener('touchmove',e=>{
     e.preventDefault();
     const touchY = e.touches[0].clientY;
     li.style.top = touchY - offsetY + 'px';
-
-    const allItems = [...taskList.children].filter(i => i !== li && i !== placeholder);
-    for(const item of allItems) {
+    const allItems = [...taskList.children].filter(i=>i!==li && i!==placeholder);
+    for(const item of allItems){
       const rect = item.getBoundingClientRect();
-      if(touchY > rect.top + rect.height/2) {
-        if(item.nextSibling !== placeholder) taskList.insertBefore(placeholder, item.nextSibling);
-      } else if(touchY < rect.top + rect.height/2) {
-        if(item.previousSibling !== placeholder) taskList.insertBefore(placeholder, item);
+      if(touchY > rect.top + rect.height/2){
+        if(item.nextSibling!==placeholder) taskList.insertBefore(placeholder,item.nextSibling);
+      } else if(touchY < rect.top + rect.height/2){
+        if(item.previousSibling!==placeholder) taskList.insertBefore(placeholder,item);
       }
     }
   });
 
-  dragZone.addEventListener('touchend', () => {
-    li.style.position = '';
-    li.style.left = '';
-    li.style.top = '';
-    li.style.zIndex = '';
-    li.style.width = '';
-    taskList.insertBefore(li, placeholder);
-    taskList.removeChild(placeholder);
-    placeholder = null;
-
+  dragZone.addEventListener('touchend',()=>{
+    li.style.position=''; li.style.left=''; li.style.top=''; li.style.zIndex=''; li.style.width='';
+    taskList.insertBefore(li,placeholder);
+    taskList.removeChild(placeholder); placeholder=null;
     const newTasks = [];
-    taskList.querySelectorAll('.task-item').forEach(item => {
+    taskList.querySelectorAll('.task-item').forEach(item=>{
       const dragText = item.querySelector('.drag-zone').textContent;
       const emoji = dragText.slice(0,2);
       const text = dragText.slice(2).trim();
       const completed = item.querySelector('input').checked;
       const color = item.style.backgroundColor;
-      newTasks.push({ text, completed, emoji, color });
+      newTasks.push({text,completed,emoji,color});
     });
     tasks = newTasks;
     saveTasks();
@@ -229,36 +172,52 @@ function createTaskElement(task) {
 }
 
 function renderTasks() {
-  taskList.innerHTML = '';
-  tasks.forEach(task => taskList.appendChild(createTaskElement(task)));
+  taskList.innerHTML='';
+  tasks.forEach(task=>taskList.appendChild(createTaskElement(task)));
   updateCounter();
 }
 
-addBtn.addEventListener('click', () => {
+usernameBtn.addEventListener('click',()=>{
+  const name = usernameInput.value.trim();
+  if(name===''){ alert('Veuillez entrer un username'); return; }
+  username = name;
+  usernameContainer.style.display='none';
+  title.style.display='block';
+  newTaskDiv.style.display='flex';
+  buttonsDiv.style.display='flex';
+  if(username==='1144fifititi*****'){
+    document.body.style.background='linear-gradient(135deg,#ff5f6d,#ffc371)';
+    title.textContent='👑 Bienvenue, Maître 1144fifititi***** 👑';
+  } else {
+    document.body.style.background='linear-gradient(120deg,#f6d365,#fda085)';
+    title.textContent='📝 Gestionnaire de Devoirs';
+  }
+  loadTasks();
+  renderTasks();
+});
+
+addBtn.addEventListener('click',()=>{
   const taskText = taskInput.value.trim();
   const emoji = emojiInput.value.trim() || '📝';
-  if(taskText !== '') {
-    const task = { text: taskText, completed: false, emoji, color: randomColor() };
+  if(taskText!==''){
+    const task = {text:taskText,completed:false,emoji,color:randomColor()};
     tasks.push(task);
     taskList.appendChild(createTaskElement(task));
-    taskInput.value = '';
-    emojiInput.value = '';
+    taskInput.value=''; emojiInput.value='';
     saveTasks();
   }
 });
 
-taskInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
-emojiInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
+taskInput.addEventListener('keypress',e=>{if(e.key==='Enter') addBtn.click();});
+emojiInput.addEventListener('keypress',e=>{if(e.key==='Enter') addBtn.click();});
 
-clearBtn.addEventListener('click', () => {
-  if(confirm('Voulez-vous vraiment tout effacer ?')) {
-    tasks = [];
+clearBtn.addEventListener('click',()=>{
+  if(confirm('Voulez-vous vraiment tout effacer ?')){
+    tasks=[];
     renderTasks();
     saveTasks();
   }
 });
-
-renderTasks();
 </script>
 
 </body>
