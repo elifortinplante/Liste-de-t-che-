@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestionnaire de Devoirs Fun</title>
+<title>Gestionnaire de Devoirs Mobile</title>
 <style>
   body {
     font-family: 'Segoe UI', sans-serif;
@@ -61,11 +61,12 @@
     padding: 12px;
     border-radius: 10px;
     margin-bottom: 10px;
-    cursor: grab;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     background-color: #fff;
     transition: transform 0.2s, background-color 0.2s;
     word-break: break-word;
+    touch-action: none;
+    user-select: none;
   }
   .task-item.completed span {
     text-decoration: line-through;
@@ -82,7 +83,7 @@
 </head>
 <body>
 
-<h1>📝 Gestionnaire de Devoirs Fun</h1>
+<h1>📝 Gestionnaire de Devoirs Mobile</h1>
 
 <div id="new-task">
   <input type="text" id="task-input" placeholder="Nouvelle tâche...">
@@ -98,134 +99,154 @@
 <div id="counter"></div>
 
 <script>
-  const taskInput = document.getElementById('task-input');
-  const emojiInput = document.getElementById('emoji-input');
-  const addBtn = document.getElementById('add-btn');
-  const clearBtn = document.getElementById('clear-btn');
-  const taskList = document.getElementById('task-list');
-  const counter = document.getElementById('counter');
+const taskInput = document.getElementById('task-input');
+const emojiInput = document.getElementById('emoji-input');
+const addBtn = document.getElementById('add-btn');
+const clearBtn = document.getElementById('clear-btn');
+const taskList = document.getElementById('task-list');
+const counter = document.getElementById('counter');
 
-  let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-  function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-    updateCounter();
-  }
+function saveTasks() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  updateCounter();
+}
 
-  function updateCounter() {
-    const remaining = tasks.filter(t => !t.completed).length;
-    counter.textContent = `📌 ${remaining} tâche(s) restante(s)`;
-  }
+function updateCounter() {
+  const remaining = tasks.filter(t => !t.completed).length;
+  counter.textContent = `📌 ${remaining} tâche(s) restante(s)`;
+}
 
-  function randomColor() {
-    return `hsl(${Math.random()*360}, 70%, 85%)`;
-  }
+function randomColor() {
+  return `hsl(${Math.random()*360}, 70%, 85%)`;
+}
 
-  function createTaskElement(task) {
-    const li = document.createElement('li');
-    li.className = 'task-item';
-    li.draggable = true;
-    li.style.backgroundColor = task.color;
-    if(task.completed) li.classList.add('completed');
+function createTaskElement(task) {
+  const li = document.createElement('li');
+  li.className = 'task-item';
+  li.style.backgroundColor = task.color;
+  if(task.completed) li.classList.add('completed');
 
-    const taskLeft = document.createElement('div');
-    taskLeft.className = 'task-left';
+  const taskLeft = document.createElement('div');
+  taskLeft.className = 'task-left';
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = task.completed;
-    checkbox.addEventListener('change', () => {
-      task.completed = checkbox.checked;
-      li.classList.toggle('completed');
-      saveTasks();
-    });
-
-    const span = document.createElement('span');
-    span.textContent = `${task.emoji || '📝'} ${task.text}`;
-
-    taskLeft.appendChild(checkbox);
-    taskLeft.appendChild(span);
-
-    const deleteBtn = document.createElement('span');
-    deleteBtn.textContent = '❌';
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.addEventListener('click', () => {
-      tasks = tasks.filter(t => t !== task);
-      taskList.removeChild(li);
-      saveTasks();
-    });
-
-    li.appendChild(taskLeft);
-    li.appendChild(deleteBtn);
-
-    li.addEventListener('dragstart', () => li.classList.add('dragging'));
-    li.addEventListener('dragend', () => {
-      li.classList.remove('dragging');
-      const newTasks = [];
-      taskList.querySelectorAll('.task-item').forEach(item => {
-        const spanText = item.querySelector('span').textContent;
-        const emoji = spanText.slice(0,2);
-        const text = spanText.slice(2).trim();
-        const completed = item.querySelector('input').checked;
-        const color = item.style.backgroundColor;
-        newTasks.push({ text, completed, emoji, color });
-      });
-      tasks = newTasks;
-      saveTasks();
-    });
-
-    return li;
-  }
-
-  function renderTasks() {
-    taskList.innerHTML = '';
-    tasks.forEach(task => taskList.appendChild(createTaskElement(task)));
-    updateCounter();
-  }
-
-  addBtn.addEventListener('click', () => {
-    const taskText = taskInput.value.trim();
-    const emoji = emojiInput.value.trim() || '📝';
-    if(taskText !== '') {
-      const task = { text: taskText, completed: false, emoji, color: randomColor() };
-      tasks.push(task);
-      taskList.appendChild(createTaskElement(task));
-      taskInput.value = '';
-      emojiInput.value = '';
-      saveTasks();
-    }
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = task.completed;
+  checkbox.addEventListener('change', () => {
+    task.completed = checkbox.checked;
+    li.classList.toggle('completed');
+    saveTasks();
   });
 
-  taskInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
-  emojiInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
+  const span = document.createElement('span');
+  span.textContent = `${task.emoji || '📝'} ${task.text}`;
 
-  clearBtn.addEventListener('click', () => {
-    if(confirm('Voulez-vous vraiment tout effacer ?')) {
-      tasks = [];
-      renderTasks();
-      saveTasks();
-    }
+  taskLeft.appendChild(checkbox);
+  taskLeft.appendChild(span);
+
+  const deleteBtn = document.createElement('span');
+  deleteBtn.textContent = '❌';
+  deleteBtn.className = 'delete-btn';
+  deleteBtn.addEventListener('click', () => {
+    tasks = tasks.filter(t => t !== task);
+    taskList.removeChild(li);
+    saveTasks();
   });
 
-  taskList.addEventListener('dragover', e => {
+  li.appendChild(taskLeft);
+  li.appendChild(deleteBtn);
+
+  // Drag for mobile
+  let startY = 0;
+  let placeholder = null;
+
+  li.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    placeholder = document.createElement('li');
+    placeholder.className = 'task-item';
+    placeholder.style.height = li.offsetHeight + 'px';
+    li.parentNode.insertBefore(placeholder, li.nextSibling);
+    li.style.position = 'absolute';
+    li.style.width = li.offsetWidth + 'px';
+    li.style.zIndex = 1000;
+    li.style.left = li.getBoundingClientRect().left + 'px';
+    li.style.top = li.getBoundingClientRect().top + 'px';
+  });
+
+  li.addEventListener('touchmove', e => {
     e.preventDefault();
-    const dragging = document.querySelector('.dragging');
-    const afterElement = getDragAfterElement(taskList, e.clientY);
-    if(afterElement == null) taskList.appendChild(dragging);
-    else taskList.insertBefore(dragging, afterElement);
+    const touchY = e.touches[0].clientY;
+    li.style.top = li.offsetTop + (touchY - startY) + 'px';
+    startY = touchY;
+    const allItems = [...taskList.children].filter(i => i !== li);
+    for(const item of allItems) {
+      const rect = item.getBoundingClientRect();
+      if(touchY > rect.top && touchY < rect.bottom) {
+        taskList.insertBefore(placeholder, item.nextSibling);
+        break;
+      }
+    }
   });
 
-  function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.task-item:not(.dragging)')];
-    return draggableElements.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if(offset < 0 && offset > closest.offset) return { offset, element: child };
-      else return closest;
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-  }
+  li.addEventListener('touchend', () => {
+    li.style.position = '';
+    li.style.left = '';
+    li.style.top = '';
+    li.style.zIndex = '';
+    li.style.width = '';
+    taskList.insertBefore(li, placeholder);
+    taskList.removeChild(placeholder);
+    placeholder = null;
+    // Update tasks order
+    const newTasks = [];
+    taskList.querySelectorAll('.task-item').forEach(item => {
+      const spanText = item.querySelector('span').textContent;
+      const emoji = spanText.slice(0,2);
+      const text = spanText.slice(2).trim();
+      const completed = item.querySelector('input').checked;
+      const color = item.style.backgroundColor;
+      newTasks.push({ text, completed, emoji, color });
+    });
+    tasks = newTasks;
+    saveTasks();
+  });
 
-  renderTasks();
+  return li;
+}
+
+function renderTasks() {
+  taskList.innerHTML = '';
+  tasks.forEach(task => taskList.appendChild(createTaskElement(task)));
+  updateCounter();
+}
+
+addBtn.addEventListener('click', () => {
+  const taskText = taskInput.value.trim();
+  const emoji = emojiInput.value.trim() || '📝';
+  if(taskText !== '') {
+    const task = { text: taskText, completed: false, emoji, color: randomColor() };
+    tasks.push(task);
+    taskList.appendChild(createTaskElement(task));
+    taskInput.value = '';
+    emojiInput.value = '';
+    saveTasks();
+  }
+});
+
+taskInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
+emojiInput.addEventListener('keypress', e => { if(e.key === 'Enter') addBtn.click(); });
+
+clearBtn.addEventListener('click', () => {
+  if(confirm('Voulez-vous vraiment tout effacer ?')) {
+    tasks = [];
+    renderTasks();
+    saveTasks();
+  }
+});
+
+renderTasks();
 </script>
 
 </body>
