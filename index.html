@@ -51,14 +51,16 @@
   #task-list {
     list-style: none;
     padding: 0;
-    width: 90%;
-    max-width: 400px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
   .task-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px;
+    padding: 8px 12px;
     border-radius: 10px;
     margin-bottom: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -68,14 +70,15 @@
     touch-action: none;
     user-select: none;
     position: relative;
+    max-width: 100%;
   }
   .task-item.completed span {
     text-decoration: line-through;
     color: gray;
   }
-  .task-left { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .drag-zone { flex: 1; padding: 0 5px; cursor: grab; }
-  .delete-btn { cursor: pointer; font-size: 20px; margin-left: 5px; flex-shrink: 0; }
+  .task-left { display: flex; align-items: center; gap: 5px; }
+  .drag-zone { cursor: grab; display: inline-block; max-width: 100%; }
+  .delete-btn { cursor: pointer; font-size: 20px; flex-shrink: 0; margin-left: 5px; }
   #counter { margin-top: 10px; font-size: 16px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
   @media (max-width: 480px) {
     #task-input, #emoji-input { width: 80px; font-size: 14px; }
@@ -142,12 +145,9 @@ function createTaskElement(task) {
     saveTasks();
   });
 
-  const span = document.createElement('span');
-  span.textContent = `${task.emoji || '📝'} ${task.text}`;
-
   const dragZone = document.createElement('div');
   dragZone.className = 'drag-zone';
-  dragZone.appendChild(span);
+  dragZone.textContent = `${task.emoji || '📝'} ${task.text}`;
 
   taskLeft.appendChild(checkbox);
   taskLeft.appendChild(dragZone);
@@ -208,9 +208,9 @@ function createTaskElement(task) {
     // Update tasks order
     const newTasks = [];
     taskList.querySelectorAll('.task-item').forEach(item => {
-      const spanText = item.querySelector('span').textContent;
-      const emoji = spanText.slice(0,2);
-      const text = spanText.slice(2).trim();
+      const dragText = item.querySelector('.drag-zone').textContent;
+      const emoji = dragText.slice(0,2);
+      const text = dragText.slice(2).trim();
       const completed = item.querySelector('input').checked;
       const color = item.style.backgroundColor;
       newTasks.push({ text, completed, emoji, color });
